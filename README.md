@@ -1,6 +1,6 @@
 # MobileNetV3 TensorFlow
 Unofficial implementation of MobileNetV3 architecture described in paper [Searching for MobileNetV3](https://arxiv.org/abs/1905.02244).
-This repository contains [small](https://github.com/bisonai/mobilenetv3-tensorflow/blob/master/mobilenetv3_small.py) and [large](https://github.com/bisonai/mobilenetv2-tensorflow/blob/master/mobilenetv3_large.py) MobileNetV3 architecture implemented using TensforFlow with `tf.keras` API.
+This repository contains [small](https://github.com/bisonai/mobilenetv3-tensorflow/blob/master/mobilenetv3_small.py) and [large](https://github.com/bisonai/mobilenetv3-tensorflow/blob/master/mobilenetv3_large.py) MobileNetV3 architecture implemented using TensforFlow with `tf.keras` API.
 
 ## Requirements
 * Python 3.6+
