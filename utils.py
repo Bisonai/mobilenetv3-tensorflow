@@ -33,25 +33,35 @@ def _make_divisible(v, divisor, min_value=None):
     return new_v
 
 
+def get_layer(layer_name, layer_dict, default_layer):
+    if layer_name is None:
+        return default_layer
+
+    if layer_name in layer_dict.keys():
+        return layer_dict.get(layer_name)
+    else:
+        raise NotImplementedError(f"Layer [{layer_name}] is not implemented")
+
+
 class LayerNamespaceWrapper(tf.keras.layers.Layer):
     """`NameWrapper` defines auxiliary layer that wraps given `layer`
-    with given `namespace`. This is useful for better visualization of network
+    with given `name`. This is useful for better visualization of network
     in TensorBoard.
 
     Default behavior of namespaces defined with nested `tf.keras.Sequential`
-    layers is to keep only the most high-level `tf.keras.Sequential` namespace.
+    layers is to keep only the most high-level `tf.keras.Sequential` name.
     """
     def __init__(
             self,
             layer: tf.keras.layers.Layer,
-            namespace: str,
+            name: str,
     ):
-        super().__init__(name=namespace)
+        super().__init__(name=name)
         self.wrapped_layer = tf.keras.Sequential(
             [
                 layer,
             ],
-            name=namespace,
+            name=name,
         )
 
     def call(self, input):

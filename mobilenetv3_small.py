@@ -14,15 +14,13 @@
 # ==============================================================================
 """Implementation of paper Searching for MobileNetV3, https://arxiv.org/abs/1905.02244
 
-MobilenetV3 Small
+MobileNetV3 Small
 """
 import tensorflow as tf
 
-from layers import ConvBnAct
-from layers import HardSwish
+from layers import ConvNormAct
 from layers import Bneck
-from layers import GlobalAveragePooling2D
-from layers import SEBottleneck
+from layers import LastStage
 from utils import _make_divisible
 from utils import LayerNamespaceWrapper
 
@@ -32,28 +30,39 @@ class MobileNetV3(tf.keras.Model):
             self,
             num_classes: int=1001,
             width_multiplier: float=1.0,
-            scope: str="MobileNetV3",
+            name: str="MobileNetV3_Small",
             divisible_by: int=8,
+            l2_reg: float=1e-5,
     ):
-        super().__init__(name=scope)
+        super().__init__(name=name)
 
         # First layer
-        self.first_layer = ConvBnAct(16, kernel_size=3, stride=2, padding=1, act_layer=HardSwish)
+        self.first_layer = ConvNormAct(
+            16,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            norm_layer="bn",
+            act_layer="hswish",
+            use_bias=False,
+            l2_reg=l2_reg,
+            name="FirstLayer",
+        )
 
         # Bottleneck layers
         self.bneck_settings = [
-            # k   exp   out  SE      nl     s
-            [ 3,  16,   16,  True,   "RE",  2 ],
-            [ 3,  72,   24,  False,  "RE",  2 ],
-            [ 3,  88,   24,  False,  "RE",  1 ],
-            [ 5,  96,   40,  True,   "HS",  2 ],
-            [ 5,  240,  40,  True,   "HS",  1 ],
-            [ 5,  240,  40,  True,   "HS",  1 ],
-            [ 5,  120,  48,  True,   "HS",  1 ],
-            [ 5,  144,  48,  True,   "HS",  1 ],
-            [ 5,  288,  96,  True,   "HS",  2 ],
-            [ 5,  576,  96,  True,   "HS",  1 ],
-            [ 5,  576,  96,  True,   "HS",  1 ],
+            # k   exp   out  SE      NL         s
+            [ 3,  16,   16,  True,   "relu",    2 ],
+            [ 3,  72,   24,  False,  "relu",    2 ],
+            [ 3,  88,   24,  False,  "relu",    1 ],
+            [ 5,  96,   40,  True,   "hswish",  2 ],
+            [ 5,  240,  40,  True,   "hswish",  1 ],
+            [ 5,  240,  40,  True,   "hswish",  1 ],
+            [ 5,  120,  48,  True,   "hswish",  1 ],
+            [ 5,  144,  48,  True,   "hswish",  1 ],
+            [ 5,  288,  96,  True,   "hswish",  2 ],
+            [ 5,  576,  96,  True,   "hswish",  1 ],
+            [ 5,  576,  96,  True,   "hswish",  1 ],
         ]
 
         self.bneck = tf.keras.Sequential(name="Bneck")
@@ -69,28 +78,23 @@ class MobileNetV3(tf.keras.Model):
                         kernel_size=k,
                         stride=s,
                         use_se=SE,
-                        nl=NL,
+                        act_layer=NL,
                     ),
-                    namespace=f"Bneck{idx}")
+                    name=f"Bneck{idx}")
             )
 
         # Last stage
         penultimate_channels = _make_divisible(576 * width_multiplier, divisible_by)
         last_channels = _make_divisible(1_280 * width_multiplier, divisible_by)
 
-        self.last_stage = tf.keras.Sequential(
-            [
-                ConvBnAct(penultimate_channels, kernel_size=1, stride=1, act_layer=HardSwish),
-                SEBottleneck(),
-                GlobalAveragePooling2D(),
-                HardSwish(),
-                ConvBnAct(last_channels, kernel_size=1, act_layer=HardSwish),
-                ConvBnAct(num_classes, kernel_size=1, act_layer=HardSwish),
-            ],
-            name="LastStage",
+        self.last_stage = LastStage(
+            penultimate_channels,
+            last_channels,
+            num_classes,
+            l2_reg=l2_reg,
         )
 
-    def call(self, input, training=False):
+    def call(self, input):
         x = self.first_layer(input)
         x = self.bneck(x)
         x = self.last_stage(x)
