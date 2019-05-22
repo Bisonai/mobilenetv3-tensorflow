@@ -21,6 +21,7 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
+from lr_scheduler import *
 from cifar10 import cifar10
 from mnist import mnist
 
@@ -56,21 +57,24 @@ def main(args):
     )
 
     _available_optimizers = {
-        "rmsprop": tf.train.RMSPropOptimizer,
-        "adam": tf.train.AdamOptimizer,
-        "sgd": tf.train.GradientDescentOptimizer,
+        "rmsprop": tf.keras.optimizers.RMSprop,
+        "adam": tf.keras.optimizers.Adam,
+        "sgd": tf.keras.optimizers.SGD,
         }
 
     if args.optimizer not in _available_optimizers:
         raise NotImplementedError
 
+    optimizer = _available_optimizers.get(args.optimizer)(lr=args.lr)
+    lr_metric = get_lr_metric(optimizer)
+
     model.compile(
-        optimizer=_available_optimizers.get(args.optimizer)(args.lr),
+        optimizer=optimizer,
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["accuracy",lr_metric],
     )
 
-    callbacks = [
+    callbacks = [tf.keras.callbacks.LearningRateScheduler(step_decay_schedule(lr0 = args.lr, drop=0.5, step_size=2)),
         tf.keras.callbacks.TensorBoard(log_dir=args.logdir),
     ]
 
