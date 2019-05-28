@@ -95,8 +95,8 @@ if __name__ == "__main__":
     parser.add_argument("--num_classes", type=int, default=10)
 
     # Input
-    parser.add_argument("--height", type=int, default=96)
-    parser.add_argument("--width", type=int, default=96)
+    parser.add_argument("--height", type=int, default=128)
+    parser.add_argument("--width", type=int, default=128)
     parser.add_argument("--channels", type=int, default=3)
     parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "mnist"])
 

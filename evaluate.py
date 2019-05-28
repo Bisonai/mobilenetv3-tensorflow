@@ -86,8 +86,8 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="small", choices=["small", "large"])
 
     # Input
-    parser.add_argument("--height", type=int, default=96)
-    parser.add_argument("--width", type=int, default=96)
+    parser.add_argument("--height", type=int, default=128)
+    parser.add_argument("--width", type=int, default=128)
     parser.add_argument("--channels", type=int, default=3)
     parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "mnist"])
 

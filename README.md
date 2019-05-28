@@ -45,8 +45,8 @@ python train.py \
     --model_type small \
     --width_multiplier 1.0 \
     --num_classes 10 \
-    --height 96 \
-    --width 96 \
+    --height 128 \
+    --width 128 \
     --channel 3 \
     --dataset cifar10 \
     --lr 0.01 \
@@ -64,8 +64,8 @@ python train.py \
     --model_type small \
     --width_multiplier 1.0 \
     --num_classes 10 \
-    --height 96 \
-    --width 96 \
+    --height 128 \
+    --width 128 \
     --channel 1 \
     --dataset mnist \
     --lr 0.01 \
@@ -85,8 +85,8 @@ python evaluate.py \
     --model_type small \
     --width_multiplier 1.0 \
     --num_classes 10 \
-    --height 96 \
-    --width 96 \
+    --height 128 \
+    --width 128 \
     --channel 3 \
     --dataset cifar10 \
     --valid_batch_size 256 \
@@ -100,8 +100,8 @@ python evaluate.py \
     --model_type small \
     --width_multiplier 1.0 \
     --num_classes 10 \
-    --height 96 \
-    --width 96 \
+    --height 128 \
+    --width 128 \
     --channel 1 \
     --dataset mnist \
     --valid_batch_size 256 \
