@@ -21,8 +21,9 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
-from cifar10 import cifar10
-from mnist import mnist
+#from cifar10 import cifar10
+#from mnist import mnist
+from datasets import *
 
 
 config = tf.ConfigProto()
@@ -32,20 +33,21 @@ tf.keras.backend.set_session(sess)
 
 
 def main(args):
-    _available_datasets = {
-        "mnist": mnist,
-        "cifar10": cifar10,
-    }
+    # _available_datasets = {
+    #     "mnist": mnist,
+    #     "cifar10": cifar10,
+    # }
 
-    if args.dataset not in _available_datasets:
-        raise NotImplementedError
+    # if args.dataset not in _available_datasets:
+    #     raise NotImplementedError
 
-    train_data, num_train_data, test_data, num_test_data = _available_datasets.get(args.dataset)(
-        args.train_batch_size,
-        args.valid_batch_size,
-        args.height,
-        args.width,
-    )
+    ds_train, num_train, ds_test, num_test = build_dataset(
+        name=args.dataset,
+        shape=[args.height,args.width],
+        num_classes= args.num_classes,
+        train_batch_size=args.train_batch_size,
+        valid_batch_size=args.valid_batch_size
+        )
 
     model = build_mobilenetv3(
         args.model_type,
@@ -75,11 +77,11 @@ def main(args):
     ]
 
     model.fit(
-        train_data.make_one_shot_iterator(),
-        steps_per_epoch=(num_train_data//args.train_batch_size)+1,
+        ds_train.make_one_shot_iterator(),
+        steps_per_epoch=(num_train//args.train_batch_size)+1,
         epochs=args.num_epoch,
-        validation_data=test_data.make_one_shot_iterator(),
-        validation_steps=(num_test_data//args.valid_batch_size)+1,
+        validation_data=ds_test,
+        validation_steps=(num_test//args.valid_batch_size)+1,
         callbacks=callbacks,
     )
 

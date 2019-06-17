@@ -21,8 +21,9 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
-from cifar10 import cifar10
-from mnist import mnist
+#from cifar10 import cifar10
+#from mnist import mnist
+from datasets import *
 
 
 config = tf.ConfigProto()
@@ -32,20 +33,19 @@ tf.keras.backend.set_session(sess)
 
 
 def main(args):
-    _available_datasets = {
-        "mnist": mnist,
-        "cifar10": cifar10,
-    }
+    # _available_datasets = {
+    #     "mnist": mnist,
+    #     "cifar10": cifar10,
+    # }
 
-    if args.dataset not in _available_datasets:
-        raise NotImplementedError
+    # if args.dataset not in _available_datasets:
+    #     raise NotImplementedError
 
-    _, _, test_data, num_test_data = _available_datasets.get(args.dataset)(
-        args.valid_batch_size,
-        args.valid_batch_size,
-        args.height,
-        args.width,
-    )
+    _, _, ds_test, num_test = build_dataset(
+        name=args.dataset,
+        shape=[args.height,args.width],
+        num_classes= args.num_classes
+        )
 
     model = build_mobilenetv3(
         args.model_type,
@@ -72,8 +72,8 @@ def main(args):
     )
 
     model.evaluate(
-        test_data.make_one_shot_iterator(),
-        steps=(num_test_data//args.valid_batch_size)+1,
+        ds_test.make_one_shot_iterator(),
+        steps=(num_test//args.valid_batch_size)+1,
     )
 
 
