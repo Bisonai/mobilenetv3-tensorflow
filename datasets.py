@@ -34,23 +34,23 @@ def build_dataset(
     dataset["channels"] = ds_train.output_shapes["image"][-1].value
 
     ds_train = ds_train.shuffle(1024).repeat()
-    ds_train = ds_train.map(lambda data: _parse_function(data,shape,dataset["num_classes"]))
+    ds_train = ds_train.map(lambda data: _parse_function(data, shape, dataset["num_classes"], dataset["channels"]))
     dataset["train"] = ds_train.batch(train_batch_size)
 
     ds_test = ds_test.shuffle(1024).repeat()
-    ds_test = ds_test.map(lambda data: _parse_function(data,shape,dataset["num_classes"]))
+    ds_test = ds_test.map(lambda data: _parse_function(data, shape, dataset["num_classes"], dataset["channels"]))
     dataset["test"] = ds_test.batch(valid_batch_size)
 
     return dataset
 
-def _parse_function(data,shape,num_classes):
+def _parse_function(data, shape, num_classes, channels):
     height, width = shape
     image = data["image"]
     label = data["label"]
 
     image = tf.cast(image, dtype=tf.float32)
     image = tf.image.resize_images(image, (height,width))
-    image = tf.reshape(image, (height,width, 1))
+    image = tf.reshape(image, (height,width, channels))
     image = image / 255.0
     image = image - 0.5
     image = image * 2.0
