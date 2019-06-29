@@ -29,20 +29,24 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 tf.keras.backend.set_session(sess)
 
+_available_datasets = [
+    "mnist",
+    "cifar10",
+    ]
+
+_available_optimizers = {
+    "rmsprop": tf.train.RMSPropOptimizer,
+    "adam": tf.train.AdamOptimizer,
+    "sgd": tf.train.GradientDescentOptimizer,
+    }
 
 def main(args):
-    
-    _available_datasets = [
-        "mnist",
-        "cifar10",
-        ]
-
-    if args.name not in _available_datasets:
+    if args.dataset not in _available_datasets:
         raise NotImplementedError
 
     dataset = build_dataset(
         name=args.dataset,
-        shape=[args.height,args.width],
+        shape=(args.height, args.width),
         train_batch_size=args.train_batch_size,
         valid_batch_size=args.valid_batch_size
         )
@@ -54,12 +58,6 @@ def main(args):
         width_multiplier=args.width_multiplier,
         l2_reg=args.l2_reg,
     )
-
-    _available_optimizers = {
-        "rmsprop": tf.train.RMSPropOptimizer,
-        "adam": tf.train.AdamOptimizer,
-        "sgd": tf.train.GradientDescentOptimizer,
-        }
 
     if args.optimizer not in _available_optimizers:
         raise NotImplementedError
@@ -96,11 +94,11 @@ if __name__ == "__main__":
     # Input
     parser.add_argument("--height", type=int, default=128)
     parser.add_argument("--width", type=int, default=128)
-    parser.add_argument("--dataset", type=str, default="mnist")
+    parser.add_argument("--dataset", type=str, default="mnist", choices=_available_datasets)
 
     # Optimizer
     parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--optimizer", type=str, default="rmsprop", choices=["sgd", "adam", "rmsprop"])
+    parser.add_argument("--optimizer", type=str, default="rmsprop", choices=_available_optimizers.keys())
     parser.add_argument("--l2_reg", type=float, default=1e-5)
 
     # Training & validation
