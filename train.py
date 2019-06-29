@@ -41,18 +41,25 @@ def main(args):
     # if args.dataset not in _available_datasets:
     #     raise NotImplementedError
 
-    ds_train, num_train, ds_test, num_test = build_dataset(
+    _available_datasets = [
+        "mnist",
+        "cifar10",
+        ]
+
+    if args.name not in _available_datasets:
+        raise NotImplementedError
+
+    dataset = build_dataset(
         name=args.dataset,
         shape=[args.height,args.width],
-        num_classes= args.num_classes,
         train_batch_size=args.train_batch_size,
         valid_batch_size=args.valid_batch_size
         )
 
     model = build_mobilenetv3(
         args.model_type,
-        input_shape=(args.height, args.width, args.channels),
-        num_classes=args.num_classes,
+        input_shape=(args.height, args.width, dataset["channels"]),
+        num_classes=dataset["num_classes"],
         width_multiplier=args.width_multiplier,
         l2_reg=args.l2_reg,
     )
@@ -77,11 +84,11 @@ def main(args):
     ]
 
     model.fit(
-        ds_train.make_one_shot_iterator(),
-        steps_per_epoch=(num_train//args.train_batch_size)+1,
+        dataset["train"].make_one_shot_iterator(),
+        steps_per_epoch=(dataset["num_train"]//args.train_batch_size)+1,
         epochs=args.num_epoch,
-        validation_data=ds_test,
-        validation_steps=(num_test//args.valid_batch_size)+1,
+        validation_data=dataset["test"],
+        validation_steps=(dataset["num_test"]//args.valid_batch_size)+1,
         callbacks=callbacks,
     )
 
@@ -94,13 +101,11 @@ if __name__ == "__main__":
     # Model
     parser.add_argument("--model_type", type=str, default="small", choices=["small", "large"])
     parser.add_argument("--width_multiplier", type=float, default=1.0)
-    parser.add_argument("--num_classes", type=int, default=10)
 
     # Input
     parser.add_argument("--height", type=int, default=128)
     parser.add_argument("--width", type=int, default=128)
-    parser.add_argument("--channels", type=int, default=3)
-    parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "mnist"])
+    parser.add_argument("--dataset", type=str, default="mnist")
 
     # Optimizer
     parser.add_argument("--lr", type=float, default=0.01)

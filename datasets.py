@@ -19,27 +19,29 @@ from typing import Tuple
 
 def build_dataset(
     shape: Tuple[int, int],
-    num_classes: int,
     name: str="mnist",
     train_batch_size: int=32,
     valid_batch_size: int=32
     ):
-  
-    builder = tfds.builder(name)
-    num_train = builder.info.splits['train'].num_examples
-    num_test = builder.info.splits['test'].num_examples
 
-    ds_train, ds_test = tfds.load(name=name, split=["train", "test"])
+    dataset = {}
+    builder = tfds.builder(name)
+    dataset["num_train"] = builder.info.splits['train'].num_examples
+    dataset["num_test"] = builder.info.splits['test'].num_examples
+
+    [ds_train, ds_test], info = tfds.load(name=name, split=["train", "test"], with_info=True)
+    dataset["num_classes"] = info.features["label"].num_classes
+    dataset["channels"] = ds_train.output_shapes["image"][-1].value
 
     ds_train = ds_train.shuffle(1024).repeat()
-    ds_train = ds_train.map(lambda data: _parse_function(data,shape,num_classes))
-    ds_train = ds_train.batch(train_batch_size)
+    ds_train = ds_train.map(lambda data: _parse_function(data,shape,dataset["num_classes"]))
+    dataset["train"] = ds_train.batch(train_batch_size)
 
     ds_test = ds_test.shuffle(1024).repeat()
-    ds_test = ds_test.map(lambda data: _parse_function(data,shape,num_classes))
-    ds_test = ds_test.batch(valid_batch_size)
+    ds_test = ds_test.map(lambda data: _parse_function(data,shape,dataset["num_classes"]))
+    dataset["test"] = ds_test.batch(valid_batch_size)
 
-    return ds_train, num_train, ds_test, num_test
+    return dataset
 
 def _parse_function(data,shape,num_classes):
     height, width = shape
