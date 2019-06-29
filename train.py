@@ -21,8 +21,7 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
-from cifar10 import cifar10
-from mnist import mnist
+from datasets import build_dataset
 
 
 config = tf.ConfigProto()
@@ -30,36 +29,35 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 tf.keras.backend.set_session(sess)
 
+_available_datasets = [
+    "mnist",
+    "cifar10",
+    ]
 
-def main(args):
-    _available_datasets = {
-        "mnist": mnist,
-        "cifar10": cifar10,
+_available_optimizers = {
+    "rmsprop": tf.train.RMSPropOptimizer,
+    "adam": tf.train.AdamOptimizer,
+    "sgd": tf.train.GradientDescentOptimizer,
     }
 
+def main(args):
     if args.dataset not in _available_datasets:
         raise NotImplementedError
 
-    train_data, num_train_data, test_data, num_test_data = _available_datasets.get(args.dataset)(
-        args.train_batch_size,
-        args.valid_batch_size,
-        args.height,
-        args.width,
-    )
+    dataset = build_dataset(
+        name=args.dataset,
+        shape=(args.height, args.width),
+        train_batch_size=args.train_batch_size,
+        valid_batch_size=args.valid_batch_size
+        )
 
     model = build_mobilenetv3(
         args.model_type,
-        input_shape=(args.height, args.width, args.channels),
-        num_classes=args.num_classes,
+        input_shape=(args.height, args.width, dataset["channels"]),
+        num_classes=dataset["num_classes"],
         width_multiplier=args.width_multiplier,
         l2_reg=args.l2_reg,
     )
-
-    _available_optimizers = {
-        "rmsprop": tf.train.RMSPropOptimizer,
-        "adam": tf.train.AdamOptimizer,
-        "sgd": tf.train.GradientDescentOptimizer,
-        }
 
     if args.optimizer not in _available_optimizers:
         raise NotImplementedError
@@ -75,11 +73,11 @@ def main(args):
     ]
 
     model.fit(
-        train_data.make_one_shot_iterator(),
-        steps_per_epoch=(num_train_data//args.train_batch_size)+1,
+        dataset["train"].make_one_shot_iterator(),
+        steps_per_epoch=(dataset["num_train"]//args.train_batch_size)+1,
         epochs=args.num_epoch,
-        validation_data=test_data.make_one_shot_iterator(),
-        validation_steps=(num_test_data//args.valid_batch_size)+1,
+        validation_data=dataset["test"],
+        validation_steps=(dataset["num_test"]//args.valid_batch_size)+1,
         callbacks=callbacks,
     )
 
@@ -92,17 +90,15 @@ if __name__ == "__main__":
     # Model
     parser.add_argument("--model_type", type=str, default="small", choices=["small", "large"])
     parser.add_argument("--width_multiplier", type=float, default=1.0)
-    parser.add_argument("--num_classes", type=int, default=10)
 
     # Input
     parser.add_argument("--height", type=int, default=128)
     parser.add_argument("--width", type=int, default=128)
-    parser.add_argument("--channels", type=int, default=3)
-    parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "mnist"])
+    parser.add_argument("--dataset", type=str, default="mnist", choices=_available_datasets)
 
     # Optimizer
     parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--optimizer", type=str, default="rmsprop", choices=["sgd", "adam", "rmsprop"])
+    parser.add_argument("--optimizer", type=str, default="rmsprop", choices=_available_optimizers.keys())
     parser.add_argument("--l2_reg", type=float, default=1e-5)
 
     # Training & validation

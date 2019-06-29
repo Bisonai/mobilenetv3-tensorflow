@@ -44,10 +44,8 @@ model = build_mobilenetv3(
 python train.py \
     --model_type small \
     --width_multiplier 1.0 \
-    --num_classes 10 \
     --height 128 \
     --width 128 \
-    --channel 3 \
     --dataset cifar10 \
     --lr 0.01 \
     --optimizer rmsprop \
@@ -63,10 +61,8 @@ python train.py \
 python train.py \
     --model_type small \
     --width_multiplier 1.0 \
-    --num_classes 10 \
     --height 128 \
     --width 128 \
-    --channel 1 \
     --dataset mnist \
     --lr 0.01 \
     --optimizer rmsprop \
@@ -84,10 +80,8 @@ python train.py \
 python evaluate.py \
     --model_type small \
     --width_multiplier 1.0 \
-    --num_classes 10 \
     --height 128 \
     --width 128 \
-    --channel 3 \
     --dataset cifar10 \
     --valid_batch_size 256 \
     --model_path mobilenetv3_small_cifar10_10.h5
@@ -99,10 +93,8 @@ python evaluate.py \
 python evaluate.py \
     --model_type small \
     --width_multiplier 1.0 \
-    --num_classes 10 \
     --height 128 \
     --width 128 \
-    --channel 1 \
     --dataset mnist \
     --valid_batch_size 256 \
     --model_path mobilenetv3_small_mnist_10.h5
