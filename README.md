@@ -2,6 +2,10 @@
 Unofficial implementation of MobileNetV3 architecture described in paper [Searching for MobileNetV3](https://arxiv.org/abs/1905.02244).
 This repository contains [small](https://github.com/bisonai/mobilenetv3-tensorflow/blob/master/mobilenetv3_small.py) and [large](https://github.com/bisonai/mobilenetv3-tensorflow/blob/master/mobilenetv3_large.py) MobileNetV3 architecture implemented using TensforFlow with `tf.keras` API.
 
+## Google Colab
+* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1RwQW05miWCO6MGELpst0yGaX4_IVm3rs) MNIST
+* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1La-zZQ1wuwMNTvUnXLh4q8LN9I280dAB) CIFAR10
+
 ## Requirements
 * Python 3.6+
 * TensorFlow 1.13+
