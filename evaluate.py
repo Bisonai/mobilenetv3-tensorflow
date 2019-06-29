@@ -21,9 +21,7 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
-#from cifar10 import cifar10
-#from mnist import mnist
-from datasets import *
+from datasets import build_dataset
 
 
 config = tf.ConfigProto()
@@ -33,24 +31,24 @@ tf.keras.backend.set_session(sess)
 
 
 def main(args):
-    # _available_datasets = {
-    #     "mnist": mnist,
-    #     "cifar10": cifar10,
-    # }
 
-    # if args.dataset not in _available_datasets:
-    #     raise NotImplementedError
+    _available_datasets = [
+        "mnist",
+        "cifar10",
+        ]
 
-    _, _, ds_test, num_test = build_dataset(
+    if args.name not in _available_datasets:
+        raise NotImplementedError
+
+    dataset = build_dataset(
         name=args.dataset,
         shape=[args.height,args.width],
-        num_classes= args.num_classes
         )
 
     model = build_mobilenetv3(
         args.model_type,
-        input_shape=(args.height, args.width, args.channels),
-        num_classes=args.num_classes,
+        input_shape=(args.height, args.width, dataset["channels"]),
+        num_classes=dataset["num_classes"],
         width_multiplier=args.width_multiplier,
     )
 
@@ -72,8 +70,8 @@ def main(args):
     )
 
     model.evaluate(
-        ds_test.make_one_shot_iterator(),
-        steps=(num_test//args.valid_batch_size)+1,
+        dataset["test"].make_one_shot_iterator(),
+        steps=(dataset["num_test"]//args.valid_batch_size)+1,
     )
 
 
@@ -81,15 +79,13 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     # Model
-    parser.add_argument("--num_classes", type=int, default=10)
     parser.add_argument("--width_multiplier", type=float, default=1.0)
     parser.add_argument("--model_type", type=str, default="small", choices=["small", "large"])
 
     # Input
     parser.add_argument("--height", type=int, default=128)
     parser.add_argument("--width", type=int, default=128)
-    parser.add_argument("--channels", type=int, default=3)
-    parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "mnist"])
+    parser.add_argument("--dataset", type=str, default="mnist")
 
     # Optimizer
     parser.add_argument("--lr", type=float, default=0.01)

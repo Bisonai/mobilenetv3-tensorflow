@@ -21,9 +21,7 @@ from argparse import ArgumentParser
 import tensorflow as tf
 
 from mobilenetv3_factory import build_mobilenetv3
-#from cifar10 import cifar10
-#from mnist import mnist
-from datasets import *
+from datasets import build_dataset
 
 
 config = tf.ConfigProto()
@@ -33,14 +31,7 @@ tf.keras.backend.set_session(sess)
 
 
 def main(args):
-    # _available_datasets = {
-    #     "mnist": mnist,
-    #     "cifar10": cifar10,
-    # }
-
-    # if args.dataset not in _available_datasets:
-    #     raise NotImplementedError
-
+    
     _available_datasets = [
         "mnist",
         "cifar10",
